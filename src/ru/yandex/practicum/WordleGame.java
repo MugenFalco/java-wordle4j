@@ -28,7 +28,9 @@ public class WordleGame {
         this.guessedWords = new HashSet<>();
         logger.println("Игра начата. Загаданное слово: " + targetWord);
     }
+
     //конструктор для тестов
+
     public WordleGame(WordleDictionary dictionary, String targetWord, PrintWriter logger) {
         this.dictionary = dictionary;
         this.logger = logger;
@@ -41,12 +43,24 @@ public class WordleGame {
         logger.println("Игра начата. Загаданное слово: " + targetWord);
     }
 
-    public int getAttemptsLeft() { return attemptsLeft; }
-    public String getTargetWord() { return targetWord; }
-    public List<String> getGuesses() { return Collections.unmodifiableList(guesses); }
-    public List<String> getHints() { return Collections.unmodifiableList(hints); }
-    public boolean isGameOver() { return attemptsLeft == 0 || isWordGuessed(); }
-    public boolean isWordGuessed() { return guessedWords.contains(targetWord); }
+    public int getAttemptsLeft() {
+        return attemptsLeft;
+    }
+    public String getTargetWord() {
+        return targetWord;
+    }
+    public List<String> getGuesses() {
+        return Collections.unmodifiableList(guesses);
+    }
+    public List<String> getHints() {
+        return Collections.unmodifiableList(hints);
+    }
+    public boolean isGameOver() {
+        return attemptsLeft == 0 || isWordGuessed();
+    }
+    public boolean isWordGuessed() {
+        return guessedWords.contains(targetWord);
+    }
 
     public GuessResult makeGuess(String guess) throws InvalidWordException {
         if (isGameOver()) {
