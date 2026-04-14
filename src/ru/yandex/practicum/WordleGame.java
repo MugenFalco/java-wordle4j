@@ -46,18 +46,23 @@ public class WordleGame {
     public int getAttemptsLeft() {
         return attemptsLeft;
     }
+
     public String getTargetWord() {
         return targetWord;
     }
+
     public List<String> getGuesses() {
         return Collections.unmodifiableList(guesses);
     }
+
     public List<String> getHints() {
         return Collections.unmodifiableList(hints);
     }
+
     public boolean isGameOver() {
         return attemptsLeft == 0 || isWordGuessed();
     }
+    
     public boolean isWordGuessed() {
         return guessedWords.contains(targetWord);
     }
