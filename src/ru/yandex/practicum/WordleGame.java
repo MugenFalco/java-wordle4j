@@ -2,6 +2,7 @@ package ru.yandex.practicum;
 
 import ru.yandex.practicum.exception.InvalidWordException;
 import ru.yandex.practicum.exception.WordNotFoundInDictionaryException;
+
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -62,7 +63,7 @@ public class WordleGame {
     public boolean isGameOver() {
         return attemptsLeft == 0 || isWordGuessed();
     }
-    
+
     public boolean isWordGuessed() {
         return guessedWords.contains(targetWord);
     }
