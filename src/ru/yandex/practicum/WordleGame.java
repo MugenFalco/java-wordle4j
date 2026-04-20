@@ -164,6 +164,14 @@ public class WordleGame {
         return null;
     }
 
+    List<GuessResult> buildHistory() {
+        List<GuessResult> history = new ArrayList<>();
+        for (int i = 0; i < guesses.size(); i++) {
+            history.add(new GuessResult(guesses.get(i), hints.get(i)));
+        }
+        return history;
+    }
+
     public String normalizeAndValidate(String input) throws InvalidWordException {
         if (input == null || input.isBlank()) {
             throw new InvalidWordException("Ввод не может быть пустым");
