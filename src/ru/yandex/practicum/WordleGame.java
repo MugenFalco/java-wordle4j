@@ -16,6 +16,9 @@ public class WordleGame {
     private final Set<String> usedHintWords;
     private final Set<String> guessedWords;
     private final PrintWriter logger;
+    private final Set<Character> absentLetters;
+    private final Set<Character> presentLetters;
+    private final List<Character> correctPositions;
 
     public WordleGame(WordleDictionary dictionary, PrintWriter logger) {
         this.dictionary = dictionary;
@@ -27,6 +30,12 @@ public class WordleGame {
         this.hints = new ArrayList<>();
         this.usedHintWords = new HashSet<>();
         this.guessedWords = new HashSet<>();
+        this.absentLetters = new HashSet<>();
+        this.presentLetters = new HashSet<>();
+        this.correctPositions = new ArrayList<>();
+        for (int i = 0; i < WordleDictionary.WORD_LENGTH; i++) {
+            correctPositions.add(null);
+        }
         logger.println("Игра начата. Загаданное слово: " + targetWord);
     }
 
@@ -41,6 +50,12 @@ public class WordleGame {
         this.hints = new ArrayList<>();
         this.usedHintWords = new HashSet<>();
         this.guessedWords = new HashSet<>();
+        this.absentLetters = new HashSet<>();
+        this.presentLetters = new HashSet<>();
+        this.correctPositions = new ArrayList<>();
+        for (int i = 0; i < WordleDictionary.WORD_LENGTH; i++) {
+            correctPositions.add(null);
+        }
         logger.println("Игра начата. Загаданное слово: " + targetWord);
     }
 
@@ -81,31 +96,72 @@ public class WordleGame {
         hints.add(hint);
         attemptsLeft--;
         guessedWords.add(guess);
+        updateCharState(guess, hint);
+
         logger.println("Догадка: " + guess + " -> " + hint);
         return new GuessResult(guess, hint);
     }
 
-    public String getHint() {
-        List<GuessResult> history = buildHistory();
-        List<String> candidates = dictionary.filter(history);
-        Set<String> used = new HashSet<>(guesses);
-        used.addAll(usedHintWords);
-        candidates.removeAll(used);
-        if (candidates.isEmpty()) {
-            return null;
+    private void updateCharState(String guess, String hint) {
+        for (int i = 0; i < WordleDictionary.WORD_LENGTH; i++) {
+            char c = guess.charAt(i);
+            char hintChar = hint.charAt(i);
+            if (hintChar == '+') {
+                correctPositions.set(i, c);
+                presentLetters.add(c);
+            } else if (hintChar == '^') {
+                presentLetters.add(c);
+            } else if (hintChar == '-') {
+                if (!presentLetters.contains(c) && !correctPositions.contains(c)) {
+                    absentLetters.add(c);
+                }
+            }
         }
-        String hintWord = candidates.getFirst();
-        usedHintWords.add(hintWord);
-        logger.println("Выдана подсказка: " + hintWord);
-        return hintWord;
     }
 
-    List<GuessResult> buildHistory() {
-        List<GuessResult> history = new ArrayList<>();
-        for (int i = 0; i < guesses.size(); i++) {
-            history.add(new GuessResult(guesses.get(i), hints.get(i)));
+    public String getHint() {
+        Set<String> used = new HashSet<>(guessedWords);
+        used.addAll(usedHintWords);
+
+        for (String word : dictionary.getWords()) {
+            if (used.contains(word)) {
+                continue;
+            }
+
+            boolean positionsOk = true;
+            for (int i = 0; i < WordleDictionary.WORD_LENGTH; i++) {
+                Character correctChar = correctPositions.get(i);
+                if (correctChar != null && word.charAt(i) != correctChar) {
+                    positionsOk = false;
+                    break;
+                }
+            }
+            if (!positionsOk) continue;
+
+            boolean noAbsent = true;
+            for (char ch : absentLetters) {
+                if (word.indexOf(ch) >= 0) {
+                    noAbsent = false;
+                    break;
+                }
+            }
+            if (!noAbsent) continue;
+
+            boolean allPresent = true;
+            for (char ch : presentLetters) {
+                if (word.indexOf(ch) < 0) {
+                    allPresent = false;
+                    break;
+                }
+            }
+            if (!allPresent) continue;
+
+            usedHintWords.add(word);
+            logger.println("Выдана подсказка: " + word);
+            return word;
         }
-        return history;
+
+        return null;
     }
 
     public String normalizeAndValidate(String input) throws InvalidWordException {

@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 public class WordleDictionary {
     private final List<String> words;
+    public static final int WORD_LENGTH = 5;
+    private static final String RUSSIAN_LETTERS = "[а-я]+";
 
     public WordleDictionary(List<String> words) {
         this.words = new ArrayList<>(words);
@@ -29,20 +31,20 @@ public class WordleDictionary {
             String guess = gr.getGuess();
             String hint = gr.getHint();
 
-            boolean[] candidateUsed = new boolean[5];
+            boolean[] candidateUsed = new boolean[WORD_LENGTH];
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < WORD_LENGTH; i++) {
                 if (hint.charAt(i) == '+') {
                     if (candidate.charAt(i) != guess.charAt(i)) return false;
                     candidateUsed[i] = true;
                 }
             }
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < WORD_LENGTH; i++) {
                 if (hint.charAt(i) == '^') {
                     char gChar = guess.charAt(i);
                     boolean found = false;
-                    for (int j = 0; j < 5; j++) {
+                    for (int j = 0; j < WORD_LENGTH; j++) {
                         if (j != i && !candidateUsed[j] && candidate.charAt(j) == gChar) {
                             candidateUsed[j] = true;
                             found = true;
@@ -53,10 +55,10 @@ public class WordleDictionary {
                 }
             }
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < WORD_LENGTH; i++) {
                 if (hint.charAt(i) == '-') {
                     char gChar = guess.charAt(i);
-                    for (int j = 0; j < 5; j++) {
+                    for (int j = 0; j < WORD_LENGTH; j++) {
                         if (!candidateUsed[j] && candidate.charAt(j) == gChar) {
                             return false;
                         }
@@ -68,31 +70,35 @@ public class WordleDictionary {
     }
 
     public static String getHint(String guess, String target) {
-        char[] result = new char[5];
+        char[] result = new char[WORD_LENGTH];
         Arrays.fill(result, '-');
-        boolean[] matched = new boolean[5];
-        int[] targetCharCounts = new int['я' - 'а' + 1];
+        boolean[] matched = new boolean[WORD_LENGTH];
+        Map<Character, Integer> remaining = new HashMap<>();
 
-        for (int i = 0; i < 5; i++) {
+        // Точные совпадения
+        for (int i = 0; i < WORD_LENGTH; i++) {
             if (guess.charAt(i) == target.charAt(i)) {
                 result[i] = '+';
                 matched[i] = true;
             }
         }
 
-        for (int i = 0; i < 5; i++) {
+        // Считаем символы target, не участвующие в точных совпадениях
+        for (int i = 0; i < WORD_LENGTH; i++) {
             if (!matched[i]) {
-                targetCharCounts[target.charAt(i) - 'а']++;
+                char ch = target.charAt(i);
+                remaining.put(ch, remaining.getOrDefault(ch, 0) + 1);
             }
         }
 
-        for (int i = 0; i < 5; i++) {
+        // Находим символы, которые есть в слове, но не на своём месте
+        for (int i = 0; i < WORD_LENGTH; i++) {
             if (result[i] == '-') {
                 char gChar = guess.charAt(i);
-                int idx = gChar - 'а';
-                if (targetCharCounts[idx] > 0) {
+                Integer count = remaining.get(gChar);
+                if (count != null && count > 0) {
                     result[i] = '^';
-                    targetCharCounts[idx]--;
+                    remaining.put(gChar, count - 1);
                 }
             }
         }
@@ -107,6 +113,6 @@ public class WordleDictionary {
     }
 
     public static boolean isValidWord(String word) {
-        return word != null && word.length() == 5 && word.matches("[а-я]+");
+        return word != null && word.length() == WORD_LENGTH && word.matches(RUSSIAN_LETTERS);
     }
 }
